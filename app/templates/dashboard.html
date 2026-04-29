@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailML — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-icon">🛍️</span>
+        <span class="brand-text">RetailML</span>
+        <span class="brand-badge">Dashboard</span>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link">Prédiction</a>
+        <a href="/dashboard" class="nav-link active">Dashboard</a>
+    </div>
+</nav>
+
+<section class="dashboard-hero">
+    <h1>Dashboard <span class="gradient-text">Modèles ML</span></h1>
+    <p>Visualisations et métriques des modèles entraînés</p>
+</section>
+
+<section class="dashboard-section">
+    {% if reports %}
+    <div class="reports-grid">
+        {% for report in reports %}
+        <div class="report-card">
+            <div class="report-title">{{ report.replace('_', ' ').replace('.png', '').title() }}</div>
+            <img src="{{ url_for('static', filename='../reports/' + report) }}"
+                 alt="{{ report }}"
+                 class="report-img"
+                 onerror="this.parentElement.style.display='none'">
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h2>Aucun rapport disponible</h2>
+        <p>Entraînez d'abord les modèles pour générer les visualisations.</p>
+        <code>python src/train_model.py</code>
+    </div>
+    {% endif %}
+</section>
+
+<footer class="footer">
+    <p>Atelier ML — Analyse Comportementale Clientèle Retail &nbsp;|&nbsp; GI2 &middot; 2025-2026</p>
+</footer>
+</body>
+</html>

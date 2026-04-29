@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Résultat de prédiction churn — RetailML">
+    <title>RetailML — Résultat de Prédiction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ── Navigation ───────────────────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-icon">🛍️</span>
+        <span class="brand-text">RetailML</span>
+        <span class="brand-badge">Churn Predictor</span>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link">Prédiction</a>
+    </div>
+</nav>
+
+<!-- ── Résultat principal ─────────────────────────────────────────────── -->
+<section class="result-hero">
+    <div class="result-header">
+        <a href="/" class="back-btn">← Nouvelle prédiction</a>
+        <h1>Résultat de l'analyse</h1>
+    </div>
+
+    <!-- Carte risque principale -->
+    <div class="risk-card risk-{{ result.risk_level | lower }}">
+        <div class="risk-left">
+            <div class="risk-emoji">{{ result.risk_emoji }}</div>
+            <div class="risk-details">
+                <div class="risk-label">Niveau de risque</div>
+                <div class="risk-value">{{ result.risk_level }}</div>
+                <div class="risk-msg">{{ result.risk_message }}</div>
+            </div>
+        </div>
+        <div class="risk-right">
+            <div class="proba-ring">
+                <svg viewBox="0 0 120 120" class="proba-svg">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="10"
+                            stroke-dasharray="{{ (result.churn_proba * 314.16) | round(1) }} 314.16"
+                            stroke-linecap="round"
+                            transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="proba-text">
+                    <span class="proba-num">{{ (result.churn_proba * 100) | round(1) }}%</span>
+                    <span class="proba-label">Churn</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Métriques détaillées ───────────────────────────────────────────── -->
+<section class="metrics-section">
+    <div class="metrics-grid">
+
+        <div class="metric-card">
+            <div class="metric-icon">🎯</div>
+            <div class="metric-body">
+                <div class="metric-label">Prédiction</div>
+                <div class="metric-val {% if result.churn_predicted == 1 %}val-danger{% else %}val-success{% endif %}">
+                    {% if result.churn_predicted == 1 %}
+                        Churn probable
+                    {% else %}
+                        Client fidèle
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">🏷️</div>
+            <div class="metric-body">
+                <div class="metric-label">Segment client</div>
+                <div class="metric-val">{{ result.cluster_label }}</div>
+                <div class="metric-sub">Cluster #{{ result.cluster_id }}</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">📊</div>
+            <div class="metric-body">
+                <div class="metric-label">Probabilité churn</div>
+                <div class="metric-val">{{ "%.1f" | format(result.churn_proba * 100) }}%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (result.churn_proba * 100) | round(1) }}%; background: {% if result.churn_proba > 0.75 %}var(--danger){% elif result.churn_proba > 0.5 %}var(--warning){% else %}var(--success){% endif %};"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">💡</div>
+            <div class="metric-body">
+                <div class="metric-label">Action recommandée</div>
+                <div class="metric-val-sm">{{ result.risk_message }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Recommandations marketing ─────────────────────────────────────── -->
+<section class="reco-section">
+    <h2>Recommandations Marketing</h2>
+    <div class="reco-grid">
+        {% if result.churn_proba > 0.75 %}
+        <div class="reco-card reco-urgent">
+            <h3>🚨 Action urgente</h3>
+            <ul>
+                <li>Contacter le client sous 48h par téléphone ou email personnalisé</li>
+                <li>Proposer une offre de rétention exclusive (-20% sur prochaine commande)</li>
+                <li>Activer un programme de fidélité dédié</li>
+                <li>Enquête satisfaction prioritaire</li>
+            </ul>
+        </div>
+        {% elif result.churn_proba > 0.50 %}
+        <div class="reco-card reco-medium">
+            <h3>⚠️ Surveillance renforcée</h3>
+            <ul>
+                <li>Envoyer un email de réengagement avec offre personnalisée</li>
+                <li>Campagne de rétention automatisée (J+7, J+14, J+30)</li>
+                <li>Suggérer des produits complémentaires basés sur l'historique</li>
+                <li>Points bonus sur prochain achat</li>
+            </ul>
+        </div>
+        {% elif result.churn_proba > 0.20 %}
+        <div class="reco-card reco-low">
+            <h3>📩 Fidélisation proactive</h3>
+            <ul>
+                <li>Newsletter personnalisée avec nouveautés</li>
+                <li>Programme de parrainage</li>
+                <li>Invitation aux ventes privées</li>
+                <li>Suivi standard de la satisfaction</li>
+            </ul>
+        </div>
+        {% else %}
+        <div class="reco-card reco-safe">
+            <h3>✅ Client fidèle — Valorisation</h3>
+            <ul>
+                <li>Programme VIP / ambassadeur</li>
+                <li>Accès anticipé aux nouvelles collections</li>
+                <li>Invitations événements exclusifs</li>
+                <li>Récompenses de fidélité renforcées</li>
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="reco-card reco-segment">
+            <h3>📈 Profil segment : {{ result.cluster_label }}</h3>
+            <div class="input-summary">
+                <p><strong>Données utilisées pour la prédiction :</strong></p>
+                {% for key, val in customer.items() %}
+                <div class="input-row">
+                    <span class="input-key">{{ key }}</span>
+                    <span class="input-val">{{ val }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="result-footer">
+    <a href="/" class="btn btn-primary">🔮 Nouvelle prédiction</a>
+</div>
+
+<footer class="footer">
+    <p>Atelier ML — Analyse Comportementale Clientèle Retail &nbsp;|&nbsp; GI2 &middot; 2025-2026</p>
+</footer>
+
+<script>
+    // Animation de la progress bar
+    window.addEventListener('load', () => {
+        document.querySelectorAll('.progress-fill').forEach(el => {
+            const width = el.style.width;
+            el.style.width = '0%';
+            setTimeout(() => { el.style.width = width; }, 100);
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Prédiction du risque de churn client pour e-commerce de cadeaux — Analyse ML Retail">
+    <title>RetailML — Prédiction Churn Client</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- ── Navigation ───────────────────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="brand-icon">🛍️</span>
+        <span class="brand-text">RetailML</span>
+        <span class="brand-badge">Churn Predictor</span>
+    </div>
+    <div class="nav-links">
+        <a href="/" class="nav-link active">Prédiction</a>
+    </div>
+</nav>
+
+<!-- ── Hero Section ─────────────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Analyse Comportementale <span class="gradient-text">Clientèle</span></h1>
+        <p class="hero-subtitle">Identifiez les clients à risque de départ grâce au Machine Learning</p>
+        <div class="hero-stats">
+            <div class="stat-pill">📊 52 Features</div>
+            <div class="stat-pill">🤖 Random Forest</div>
+            <div class="stat-pill">🎯 Clustering KMeans</div>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="floating-card card-1">
+            <span>🔴</span> Churn Critique
+        </div>
+        <div class="floating-card card-2">
+            <span>🟢</span> Client Fidèle
+        </div>
+        <div class="floating-card card-3">
+            <span>📈</span> AUC > 0.92
+        </div>
+    </div>
+</section>
+
+<!-- ── Alerte erreur ─────────────────────────────────────────────────────── -->
+{% if error %}
+<div class="alert alert-error">
+    <span>⚠️</span>
+    <div>
+        <strong>Modèles non disponibles</strong>
+        <p>{{ error }}</p>
+        <code>python src/generate_data.py &amp;&amp; python src/preprocessing.py &amp;&amp; python src/train_model.py</code>
+    </div>
+</div>
+{% endif %}
+
+<!-- ── Formulaire ────────────────────────────────────────────────────────── -->
+<section class="form-section">
+    <div class="form-container">
+        <div class="form-header">
+            <h2>Saisir les données client</h2>
+            <p>Renseignez les métriques comportementales pour obtenir une prédiction</p>
+        </div>
+
+        <form action="/predict" method="POST" class="predict-form" id="predictForm">
+
+            <!-- Groupe RFM -->
+            <div class="form-group-title">
+                <span class="group-icon">💰</span> Métriques RFM
+            </div>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="Recency">Recency (jours)</label>
+                    <input type="number" id="Recency" name="Recency" value="100" min="0" max="400" required>
+                    <span class="field-hint">Jours depuis dernier achat</span>
+                </div>
+                <div class="form-field">
+                    <label for="Frequency">Frequency (cmd)</label>
+                    <input type="number" id="Frequency" name="Frequency" value="8" min="1" max="50" required>
+                    <span class="field-hint">Nombre de commandes</span>
+                </div>
+                <div class="form-field">
+                    <label for="MonetaryTotal">MonetaryTotal (£)</label>
+                    <input type="number" id="MonetaryTotal" name="MonetaryTotal" value="1200" step="0.01" required>
+                    <span class="field-hint">Total dépensé</span>
+                </div>
+                <div class="form-field">
+                    <label for="MonetaryAvg">MonetaryAvg (£)</label>
+                    <input type="number" id="MonetaryAvg" name="MonetaryAvg" value="150" step="0.01" required>
+                    <span class="field-hint">Panier moyen</span>
+                </div>
+            </div>
+
+            <!-- Groupe Profil -->
+            <div class="form-group-title">
+                <span class="group-icon">👤</span> Profil Client
+            </div>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="Age">Âge</label>
+                    <input type="number" id="Age" name="Age" value="35" min="18" max="81" required>
+                    <span class="field-hint">Âge estimé du client</span>
+                </div>
+                <div class="form-field">
+                    <label for="CustomerTenure">Ancienneté (jours)</label>
+                    <input type="number" id="CustomerTenure" name="CustomerTenure" value="300" min="0" max="730" required>
+                    <span class="field-hint">Durée relation client</span>
+                </div>
+                <div class="form-field">
+                    <label for="SupportTickets">Tickets Support</label>
+                    <input type="number" id="SupportTickets" name="SupportTickets" value="2" min="0" max="15" required>
+                    <span class="field-hint">Tickets ouverts (0-15)</span>
+                </div>
+                <div class="form-field">
+                    <label for="Satisfaction">Satisfaction (/5)</label>
+                    <input type="number" id="Satisfaction" name="Satisfaction" value="3.5" min="1" max="5" step="0.5" required>
+                    <span class="field-hint">Note de satisfaction</span>
+                </div>
+            </div>
+
+            <!-- Groupe Comportement (Caché pour simplifier la saisie) -->
+            <div class="form-group-title" style="display: none;">
+                <span class="group-icon">📊</span> Comportement d'achat
+            </div>
+            <div class="form-grid" style="display: none;">
+                <div class="form-field">
+                    <label for="WeekendRatio">Ratio Weekend</label>
+                    <input type="number" id="WeekendRatio" name="WeekendRatio" value="0.3" min="0" max="1" step="0.01" required>
+                    <span class="field-hint">Proportion achats weekend</span>
+                </div>
+                <div class="form-field">
+                    <label for="ReturnRatio">Taux de retour</label>
+                    <input type="number" id="ReturnRatio" name="ReturnRatio" value="0.05" min="0" max="1" step="0.01" required>
+                    <span class="field-hint">Proportion retours</span>
+                </div>
+                <div class="form-field">
+                    <label for="UniqueProducts">Produits uniques</label>
+                    <input type="number" id="UniqueProducts" name="UniqueProducts" value="25" min="1" max="1000" required>
+                    <span class="field-hint">Diversité des achats</span>
+                </div>
+                <div class="form-field">
+                    <label for="CancelledTrans">Annulations</label>
+                    <input type="number" id="CancelledTrans" name="CancelledTrans" value="2" min="0" max="50" required>
+                    <span class="field-hint">Transactions annulées</span>
+                </div>
+            </div>
+
+            <!-- Groupe Segments (Caché pour simplifier la saisie) -->
+            <div class="form-group-title" style="display: none;">
+                <span class="group-icon">🏷️</span> Segments
+            </div>
+            <div class="form-grid" style="display: none;">
+                <div class="form-field">
+                    <label for="RFMSegment">Segment RFM</label>
+                    <select id="RFMSegment" name="RFMSegment">
+                        <option value="3">Champions</option>
+                        <option value="2">Fidèles</option>
+                        <option value="1" selected>Potentiels</option>
+                        <option value="0">Dormants</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="SpendingCat">Niveau dépense</label>
+                    <select id="SpendingCat" name="SpendingCat">
+                        <option value="3">VIP</option>
+                        <option value="2">High</option>
+                        <option value="1" selected>Medium</option>
+                        <option value="0">Low</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="ChurnRisk">Risque Churn estimé</label>
+                    <select id="ChurnRisk" name="ChurnRisk">
+                        <option value="0">Faible</option>
+                        <option value="1" selected>Moyen</option>
+                        <option value="2">Élevé</option>
+                        <option value="3">Critique</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label for="MonetaryStd">Écart-type dépenses (£)</label>
+                    <input type="number" id="MonetaryStd" name="MonetaryStd" value="80" step="0.01" required>
+                    <span class="field-hint">Variabilité des dépenses</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="fillDemoRisk">
+                    🔴 Demo client risqué
+                </button>
+                <button type="button" class="btn btn-secondary" id="fillDemoLoyal">
+                    🟢 Demo client fidèle
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="btn-icon">🔮</span>
+                    Prédire le Churn
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- ── Comment ça marche ─────────────────────────────────────────────────── -->
+<section class="how-section">
+    <h2>Comment ça marche ?</h2>
+    <div class="steps-grid">
+        <div class="step-card">
+            <div class="step-num">01</div>
+            <h3>Saisie des données</h3>
+            <p>Renseignez les métriques comportementales clés du client</p>
+        </div>
+        <div class="step-card">
+            <div class="step-num">02</div>
+            <h3>Preprocessing</h3>
+            <p>Les features sont normalisées via le pipeline StandardScaler</p>
+        </div>
+        <div class="step-card">
+            <div class="step-num">03</div>
+            <h3>Modèle Random Forest</h3>
+            <p>Le modèle entraîné calcule la probabilité de churn</p>
+        </div>
+        <div class="step-card">
+            <div class="step-num">04</div>
+            <h3>Recommandation</h3>
+            <p>Une action marketing ciblée est proposée selon le niveau de risque</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Atelier ML — Analyse Comportementale Clientèle Retail &nbsp;|&nbsp; GI2 &middot; 2025-2026</p>
+</footer>
+
+<script>
+    // Demo buttons
+    const demoRisk = {
+        Recency: 320, Frequency: 2, MonetaryTotal: 180, MonetaryAvg: 90,
+        MonetaryStd: 30, CustomerTenure: 400, Age: 55, SupportTickets: 9,
+        Satisfaction: 1.5, WeekendRatio: 0.12, ReturnRatio: 0.45,
+        UniqueProducts: 4, CancelledTrans: 12, RFMSegment: 0, SpendingCat: 0, ChurnRisk: 3
+    };
+    const demoLoyal = {
+        Recency: 8, Frequency: 42, MonetaryTotal: 9200, MonetaryAvg: 219,
+        MonetaryStd: 95, CustomerTenure: 620, Age: 31, SupportTickets: 1,
+        Satisfaction: 4.5, WeekendRatio: 0.48, ReturnRatio: 0.03,
+        UniqueProducts: 140, CancelledTrans: 1, RFMSegment: 3, SpendingCat: 3, ChurnRisk: 0
+    };
+
+    function fillForm(data) {
+        for (const [key, val] of Object.entries(data)) {
+            const el = document.getElementById(key);
+            if (el) el.value = val;
+        }
+    }
+
+    document.getElementById('fillDemoRisk').addEventListener('click', () => fillForm(demoRisk));
+    document.getElementById('fillDemoLoyal').addEventListener('click', () => fillForm(demoLoyal));
+
+    // Loading state on submit
+    document.getElementById('predictForm').addEventListener('submit', () => {
+        const btn = document.getElementById('submitBtn');
+        btn.innerHTML = '<span class="btn-icon">⏳</span> Analyse en cours...';
+        btn.disabled = true;
+    });
+</script>
+
+</body>
+</html>

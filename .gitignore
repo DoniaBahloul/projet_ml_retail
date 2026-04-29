@@ -1,0 +1,47 @@
+# Environnements virtuels
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Modèles sauvegardés (volumineux)
+models/*.pkl
+models/*.joblib
+
+# Données brutes (potentiellement sensibles / volumineuses)
+data/raw/
+
+# Variables d'environnement
+.env
+.env.local
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Rapports générés
+reports/*.png
+reports/*.html
