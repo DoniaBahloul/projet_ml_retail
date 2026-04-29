@@ -37,9 +37,9 @@ CLUSTER_LABELS = {
 }
 
 CHURN_RISK_LEVELS = [
-    (0.20, "Faible", "🟢", "Ce client est fidèle. Maintenez la relation."),
-    (0.50, "Modéré", "🟡", "Surveillez ce client. Proposez une offre de fidélisation."),
-    (0.75, "Élevé", "🟠", "Client à risque. Action marketing urgente recommandée."),
+    (0.15, "Faible", "🟢", "Ce client est fidèle. Maintenez la relation."),
+    (0.30, "Modéré", "🟡", "Surveillez ce client. Proposez une offre de fidélisation."),
+    (0.45, "Élevé", "🟠", "Client à risque. Action marketing urgente recommandée."),
     (1.01, "Critique", "🔴", "Churn quasi-certain. Intervention immédiate nécessaire."),
 ]
 
@@ -74,18 +74,19 @@ def load_pipeline():
 # PRÉPARATION DES FEATURES D'UN NOUVEAU CLIENT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def preprocess_input(customer_raw: dict, feature_names: list[str]) -> pd.DataFrame:
+def preprocess_input(customer_raw: dict, feature_names: list[str], scaler) -> pd.DataFrame:
     """
     Convertit un dictionnaire de features brutes en DataFrame compatible
     avec le pipeline entraîné.
-    Les features manquantes sont remplies avec 0 (valeur neutre après scaling).
+    Les features manquantes sont remplies avec la moyenne d'entraînement (scaler.mean_)
+    pour être neutres après la normalisation StandardScaler.
     """
     df_input = pd.DataFrame([customer_raw])
 
-    # Aligner sur les features attendues
-    for col in feature_names:
+    # Aligner sur les features attendues avec imputation de la moyenne
+    for i, col in enumerate(feature_names):
         if col not in df_input.columns:
-            df_input[col] = 0
+            df_input[col] = scaler.mean_[i]
 
     # Conserver uniquement les features connues, dans le bon ordre
     df_input = df_input[feature_names]
@@ -121,7 +122,7 @@ def predict_customer(customer_raw: dict) -> dict:
     scaler, churn_model, kmeans, feature_names = load_pipeline()
 
     # Préparer l'input
-    X_input = preprocess_input(customer_raw, feature_names)
+    X_input = preprocess_input(customer_raw, feature_names, scaler)
     X_scaled = scaler.transform(X_input)
 
     # Prédiction churn
@@ -155,28 +156,28 @@ def predict_customer(customer_raw: dict) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    # Exemple de client à risque élevé
+    # Exemple de client à risque très élevé (Critique) - Basé sur données réelles du test set
     client_risque = {
-        "Recency": 320,
-        "Frequency": 2,
-        "MonetaryTotal": 180.0,
-        "MonetaryAvg": 90.0,
-        "MonetaryStd": 30.0,
-        "CustomerTenure": 400,
-        "Age": 45,
-        "SupportTickets": 8.0,
-        "Satisfaction": 1.5,
+        "Recency": 395.0,
+        "Frequency": 13.0,
+        "MonetaryTotal": 1760.0,
+        "MonetaryAvg": 130.0,
+        "MonetaryStd": 13.0,
+        "CustomerTenure": 443.0,
+        "Age": 65.0,
+        "SupportTickets": 11.0,
+        "Satisfaction": 4.0,
         "RFMSegment": 0,       # Dormants
-        "AgeCategory": 3,      # 45-54
+        "AgeCategory": 5,      # 65+
         "SpendingCat": 0,      # Low
-        "ChurnRisk": 3,        # Critique
+        "ChurnRisk": 2,        # Élevé
         "LoyaltyLevel": 3,     # Ancien
         "BasketSize": 0,       # Petit
-        "PreferredTime": 0,    # Nuit
+        "PreferredTime": 3,    # Soir
         "WeekendRatio": 0.15,
-        "ReturnRatio": 0.4,
+        "ReturnRatio": 0.75,
         "UniqueProducts": 5,
-        "CancelledTrans": 10,
+        "CancelledTrans": 26,
     }
 
     # Exemple de client fidèle
