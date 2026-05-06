@@ -1,0 +1,10 @@
+Index,Réel (Churn),Prédit (Churn),Probabilité (%),Résultat,Type
+10,0,1,53.7,❌ FAUX,Faux Positif (Fausse alerte)
+91,1,0,47.27,❌ FAUX,Faux Négatif (Churn manqué)
+106,1,0,37.25,❌ FAUX,Faux Négatif (Churn manqué)
+113,1,0,41.17,❌ FAUX,Faux Négatif (Churn manqué)
+123,1,0,47.02,❌ FAUX,Faux Négatif (Churn manqué)
+132,0,1,70.33,❌ FAUX,Faux Positif (Fausse alerte)
+144,1,0,30.63,❌ FAUX,Faux Négatif (Churn manqué)
+189,1,0,45.66,❌ FAUX,Faux Négatif (Churn manqué)
+197,0,1,68.74,❌ FAUX,Faux Positif (Fausse alerte)
