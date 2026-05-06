@@ -147,6 +147,7 @@ def predict_customer(customer_raw: dict) -> dict:
         "risk_message": risk_message,
         "cluster_id": cluster_id,
         "cluster_label": cluster_label,
+        "churn_label": "Churn probable" if churn_predicted == 1 else ("À risque" if risk_level != "Faible" else "Client fidèle"),
         "input_features": X_input.iloc[0].to_dict(),
     }
 

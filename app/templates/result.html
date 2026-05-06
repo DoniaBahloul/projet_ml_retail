@@ -66,12 +66,8 @@
             <div class="metric-icon">🎯</div>
             <div class="metric-body">
                 <div class="metric-label">Prédiction</div>
-                <div class="metric-val {% if result.churn_predicted == 1 %}val-danger{% else %}val-success{% endif %}">
-                    {% if result.churn_predicted == 1 %}
-                        Churn probable
-                    {% else %}
-                        Client fidèle
-                    {% endif %}
+                <div class="metric-val {% if result.churn_predicted == 1 %}val-danger{% elif result.risk_level != 'Faible' %}val-warning{% else %}val-success{% endif %}">
+                    {{ result.churn_label }}
                 </div>
             </div>
         </div>
