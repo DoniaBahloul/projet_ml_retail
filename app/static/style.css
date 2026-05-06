@@ -280,6 +280,7 @@ body {
 .metric-val-sm { font-size: .88rem; color: var(--text-secondary); margin-top: .3rem; }
 .metric-sub { font-size: .78rem; color: var(--text-muted); }
 .val-danger { color: var(--danger); }
+.val-warning { color: var(--warning); }
 .val-success { color: var(--success); }
 
 .progress-bar {
